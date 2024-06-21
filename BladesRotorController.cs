@@ -7,6 +7,7 @@ public class BladesRotorController : MonoBehaviour
     public enum Axis {x, y, z}
     public Axis rotationAxis;
     float _bladeSpeed;
+    [SerializeField] float _engineSoundVolume;
     public float BladeSpeed
     {
         get
@@ -18,14 +19,21 @@ public class BladesRotorController : MonoBehaviour
             _bladeSpeed = Mathf.Clamp(value, 0, 3000);
         }
     }
+    AudioSource _audio;
 
     public bool inverseRotation = false;
     Vector3 _Rotation;
     float _rotateDegree;
+    void Start()
+    {
+        _audio = GetComponent<AudioSource>();
+        _audio.volume = _bladeSpeed;
+    }
 
     void Update()
     {
         HandlePropellerRotation();
+        HelicopterEngineSound();
     }
     void HandlePropellerRotation()
     {
@@ -53,5 +61,10 @@ public class BladesRotorController : MonoBehaviour
                 break;
 
         }
+    }
+    void HelicopterEngineSound()
+    {
+        _audio.volume += (_engineSoundVolume * 0.01f);
+        _audio.volume = Mathf.Clamp(_audio.volume, 0.01f, 1f);
     }
 }
