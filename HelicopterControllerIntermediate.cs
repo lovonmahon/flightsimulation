@@ -80,7 +80,7 @@ namespace AirSimulator
         void HandleInput()
         {
             if(!isGrounded)  //is there check needed here since it is in HelicopterMovement()? 
-                _movement.x = Input.GetAxis("Horizontal");
+                _movement.x = Input.GetAxisRaw("Horizontal");
                 _movement.y = Input.GetAxis("Vertical");
                 
                 if(Input.GetKey(KeyCode.L))
@@ -126,12 +126,17 @@ namespace AirSimulator
                     _rb.AddRelativeForce(Vector3.back * Mathf.Max(0f, - _movement.y * BackwardForce * _rb.mass));
                 }
 
-                if(Input.GetAxis("Horizontal") > 0.4 && !isGrounded || Input.GetAxis("Horizontal") < 0 && !isGrounded )
+                if(Input.GetAxisRaw("Horizontal") > 0 && !isGrounded || Input.GetAxisRaw("Horizontal") < 0 && !isGrounded )
                 {
-                    float turn = TurnForce * Mathf.Lerp(_movement.x, _movement.x * (TurnModifier - Mathf.Abs(_movement.y)), Mathf.Max(0f, _movement.y));
+                    float turn = TurnForce * Mathf.Lerp(_movement.x, _movement.x * Mathf.Abs(_movement.y) /*(TurnModifier - Mathf.Abs(_movement.y))*/, Mathf.Max(0f, _movement.y));
                     turning = Mathf.Lerp(turning, turn, Time.fixedDeltaTime * TurnForce);
                     _rb.AddRelativeTorque(0f, turning * _rb.mass, 0f);
                 }
+                else
+                {
+                    _movement.x = 0f;
+                }
+                Debug.Log($"Input value :{_movement.x}");
             }
         }
         void HelicopterTilt()
