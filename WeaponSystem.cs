@@ -30,7 +30,7 @@ namespace AirSimulator
             {
                 GameObject weaponFired = WeaponProjectilePool.Instance.ProjectileAvailable();
 
-                if(WeaponProjectilePool.Instance.ProjectileAvailable() != null)
+                if(weaponFired != null)
                 {
                     weaponFired.SetActive(true);
                     weaponFired.transform.position = _muzzle.position;

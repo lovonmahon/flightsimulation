@@ -38,13 +38,18 @@ namespace AirSimulator
         Vector3 _movement = Vector3.zero;
         Vector3 _tilt = Vector3.zero;
         public LayerMask GroundLayer;
+        public LayerMask SeaLayer;
         float _distanceToGround;
+        float _distanceToSea;
         bool isGrounded;
+        bool _closeToWater;
+        [SerializeField] float _waterRangeCheck;
         
         void Start()
         {
             _rb = GetComponent<Rigidbody>();
             isGrounded = true;
+            _closeToWater = false;
         }
         void FixedUpdate()
         {
@@ -56,6 +61,7 @@ namespace AirSimulator
         {
             HandleInput();
             GroundCheck();
+            WaterCheck();
         }
         void GroundCheck()
         {
@@ -66,7 +72,6 @@ namespace AirSimulator
             if(Physics.Raycast(ray, out hit, GroundLayer))
             {
                 _distanceToGround = hit.distance;
-                
                 if(_distanceToGround < 2)
                 {
                     isGrounded = true;
@@ -77,13 +82,39 @@ namespace AirSimulator
                 }
             }
         }
+        void WaterCheck()
+        {
+            RaycastHit waterHit;
+
+            Vector3 waterDirection = transform.TransformDirection(Vector3.down * _waterRangeCheck);
+            Ray waterRay = new Ray(transform.position, waterDirection);
+            Debug.DrawRay(transform.position, waterDirection, Color.red);
+
+            if(Physics.Raycast(waterRay, out waterHit, SeaLayer))
+            {
+                if(waterHit.collider.tag == "water")    
+                {
+                    _distanceToSea = waterHit.distance;
+                    if(_distanceToSea < _waterRangeCheck)
+                    {
+                        _closeToWater = true;
+                        HoverAbility();
+                        Debug.Log($"Close to water by {waterHit.distance}");
+                    }
+                    else
+                    {
+                        _closeToWater = false;;
+                    }
+                }
+            }
+        }
         void HandleInput()
         {
-            if(!isGrounded)  //is there check needed here since it is in HelicopterMovement()? 
+            if(!isGrounded) //is there check needed here since it is in HelicopterMovement()? 
                 _movement.x = Input.GetAxisRaw("Horizontal");
                 _movement.y = Input.GetAxis("Vertical");
                 
-                if(Input.GetKey(KeyCode.L))
+                if(Input.GetKey(KeyCode.L) && !_closeToWater)
                 {
                     EnginePower -= EngineLift;
                     _engineHoverPower -= EngineLift;
@@ -92,6 +123,12 @@ namespace AirSimulator
                     {
                         EnginePower = 0;
                     }
+                }
+                else if(Input.GetKeyDown(KeyCode.L) && _closeToWater)//Hover to prevent crashing into sea
+                {
+                    EnginePower += EngineLift;
+                    _engineHoverPower += EngineLift;
+                    EnginePower = Mathf.Lerp(_engineHoverPower, 14f, 0.2f);
                 }
             
             if(Input.GetAxis("Throttle") > 0) //mapped to T key
@@ -125,7 +162,6 @@ namespace AirSimulator
                 {
                     _rb.AddRelativeForce(Vector3.back * Mathf.Max(0f, - _movement.y * BackwardForce * _rb.mass));
                 }
-
                 if(Input.GetAxisRaw("Horizontal") > 0 && !isGrounded || Input.GetAxisRaw("Horizontal") < 0 && !isGrounded )
                 {
                     float turn = TurnForce * Mathf.Lerp(_movement.x, _movement.x * Mathf.Abs(_movement.y) /*(TurnModifier - Mathf.Abs(_movement.y))*/, Mathf.Max(0f, _movement.y));
@@ -136,7 +172,6 @@ namespace AirSimulator
                 {
                     _movement.x = 0f;
                 }
-                Debug.Log($"Input value :{_movement.x}");
             }
         }
         void HelicopterTilt()
