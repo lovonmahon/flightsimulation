@@ -63,6 +63,7 @@ namespace AirSimulator
             GroundCheck();
             WaterCheck();
         }
+        #region Raycasts
         void GroundCheck()
         {
             RaycastHit hit;
@@ -99,7 +100,6 @@ namespace AirSimulator
                     {
                         _closeToWater = true;
                         HoverAbility();
-                        Debug.Log($"Close to water by {waterHit.distance}");
                     }
                     else
                     {
@@ -108,6 +108,7 @@ namespace AirSimulator
                 }
             }
         }
+        #endregion
         void HandleInput()
         {
             if(!isGrounded) //is there check needed here since it is in HelicopterMovement()? 

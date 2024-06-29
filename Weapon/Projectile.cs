@@ -11,6 +11,7 @@ namespace AirSimulator
         [SerializeField] float _speed;
         [SerializeField] float _lifetime;
         float _startTime;
+        
         void Start()
         {
             _startTime = 0f;
@@ -18,10 +19,8 @@ namespace AirSimulator
         }
         void FixedUpdate()
         {
-            //Get direction via raycast? 
-            //Currently, projectile's directions only updates when forward key is pressed.
-            
-            _rb.AddRelativeForce(Vector3.up * _speed, ForceMode.Impulse);
+            // _rb.AddRelativeForce(Vector3.up * _speed, ForceMode.Impulse);
+            _rb.velocity = transform.up * _speed;
         }
         void Update()
         {
@@ -47,7 +46,6 @@ namespace AirSimulator
                     {
                         vfx.transform.position = hit.point;
                         vfx.SetActive(true);
-                        Debug.Log($"{vfx.transform.gameObject.name}");
                         this.gameObject.SetActive(false);
                     }
                 }
